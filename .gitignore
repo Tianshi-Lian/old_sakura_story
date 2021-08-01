@@ -1,0 +1,13 @@
+# Directories
+.vs/
+.vscode/
+bin/*
+bin-int/*
+data/*
+
+# Files
+*.vcxproj*
+*.sln
+*Makefile
+*.pyc
+*.rdbg
