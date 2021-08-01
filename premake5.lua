@@ -1,5 +1,5 @@
-workspace "project"
-    startproject "project"
+workspace "sakura_story"
+    startproject "sakura_story_client"
     architecture "x64"
 
     configurations
@@ -11,8 +11,8 @@ workspace "project"
 tdir = "bin/%{cfg.system}-%{cfg.buildcfg}-%{cfg.architecture}/%{prj.name}"
 odir = "bin-int/%{cfg.system}-%{cfg.buildcfg}-%{cfg.architecture}/%{prj.name}"
 
-project "project"
-    location "project"
+project "sakura_story"
+    location "sakura_story"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
@@ -40,6 +40,10 @@ project "project"
         "%{prj.name}/include"
     }
 
+    links
+    {
+    }
+
     filter "system:windows"
         systemversion "latest"
 
@@ -50,7 +54,7 @@ project "project"
 
         defines
         {
-            "PS_WIN"
+            "S_WIN"
         }
 
         postbuildcommands
@@ -69,7 +73,7 @@ project "project"
 
         defines
         {
-            "PS_LINUX"
+            "S_LINUX"
         }
         
         postbuildcommands
@@ -82,7 +86,7 @@ project "project"
         symbols "on"
         defines
         {
-            "PS_DEBUG"
+            "S_DEBUG"
         }
 		
 		postbuildcommands

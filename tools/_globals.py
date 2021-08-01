@@ -6,7 +6,7 @@ V_PATCH: int = 0
 V_BUILD: int = 0
 
 BUILD_CFG = "debug"
-BUILD_PRJ_NAME = "project"
+BUILD_PRJ_NAME = "sakura_story"
 
 PLATFORM = sys.platform
 

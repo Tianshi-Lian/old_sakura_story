@@ -5,14 +5,14 @@
 
 int main(int argc, char *argv[]) {
     Log::initialize();
-    Log::debug("Project initializing...");
+    Log::debug("Sakura Story initializing...");
 
-    PROFILE_BEGIN_SESSION("project", "logs/timings.json");
+    PROFILE_BEGIN_SESSION("Sakura Story", "logs/timings.json");
 
     // TODO(rob): work!
 
     PROFILE_END_SESSION();
     
-    Log::debug("Project shutting down...");
+    Log::debug("Sakura Story shutting down...");
     return (0);
 }
