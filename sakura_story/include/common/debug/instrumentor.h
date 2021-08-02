@@ -39,11 +39,11 @@ public:
 		m_outputStream.open(filepath);
 
 		if (m_outputStream.is_open()) {
-			m_currentSession = new Instrumentation_Session({name});
+			m_currentSession = new Instrumentation_Session({ name });
 			writeHeader();
 		}
 		else {
-				Log::error("Instrumentor could not open results file '{0}'.", filepath);
+			Log::error("Instrumentor could not open results file '{0}'.", filepath);
 		}
 	}
 
@@ -85,7 +85,7 @@ private:
 
 	~Instrumentor() {
 		endSession();
-	}		
+	}
 
 	void writeHeader() {
 		m_outputStream << R"({"otherData": {},"traceEvents":[{})";
@@ -113,10 +113,9 @@ private:
 	std::ofstream m_outputStream;
 };
 
-class Instrumentation_Timer
-{
+class Instrumentation_Timer {
 public:
-	Instrumentation_Timer(const char* name) 
+	Instrumentation_Timer(const char* name)
 		: m_mame(name), m_Stopped(false) {
 		m_startTimepoint = std::chrono::steady_clock::now();
 	}
@@ -149,7 +148,7 @@ struct Change_Result {
 };
 
 template <size_t N, size_t K>
-constexpr auto cleanupOutputString(const char(&expr)[N], const char(&remove)[K]){
+constexpr auto cleanupOutputString(const char(&expr)[N], const char(&remove)[K]) {
 	Change_Result<N> result = {};
 
 	size_t srcIndex = 0;
@@ -167,37 +166,37 @@ constexpr auto cleanupOutputString(const char(&expr)[N], const char(&remove)[K])
 }
 
 #if PS_DEBUG
-	// Resolve which function signature macro will be used. Note that this only
-	// is resolved when the (pre)compiler starts, so the syntax highlighting
-	// could mark the wrong one in your editor!
-	#if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || (defined(__ICC) && (__ICC >= 600)) || defined(__ghs__)
-		#define PS_FUNC_SIG __PRETTY_FUNCTION__
-	#elif defined(__DMC__) && (__DMC__ >= 0x810)
-		#define PS_FUNC_SIG __PRETTY_FUNCTION__
-	#elif (defined(__FUNCSIG__) || (_MSC_VER))
-		#define PS_FUNC_SIG __FUNCSIG__
-	#elif (defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 600)) || (defined(__IBMCPP__) && (__IBMCPP__ >= 500))
-		#define PS_FUNC_SIG __FUNCTION__
-	#elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x550)
-		#define PS_FUNC_SIG __FUNC__
-	#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901)
-		#define PS_FUNC_SIG __func__
-	#elif defined(__cplusplus) && (__cplusplus >= 201103)
-		#define PS_FUNC_SIG __func__
-	#else
-		#define PS_FUNC_SIG "HZ_FUNC_SIG unknown!"
-	#endif
-
-	#define PROFILE_BEGIN_SESSION(name, filepath) ::Instrumentor::get().beginSession(name, filepath)
-	#define PROFILE_END_SESSION() ::Instrumentor::get().endSession()
-	#define PROFILE_SCOPE_LINE2(name, line) constexpr auto fixedName##line = ::cleanupOutputString(name, "__cdecl ");\
-											   ::Instrumentation_Timer timer##line(fixedName##line.Data)
-	#define PROFILE_SCOPE_LINE(name, line) PROFILE_SCOPE_LINE2(name, line)
-	#define PROFILE_SCOPE(name) PROFILE_SCOPE_LINE(name, __LINE__)
-	#define PROFILE_FUNCTION() PROFILE_SCOPE(PS_FUNC_SIG)
+// Resolve which function signature macro will be used. Note that this only
+// is resolved when the (pre)compiler starts, so the syntax highlighting
+// could mark the wrong one in your editor!
+#if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || (defined(__ICC) && (__ICC >= 600)) || defined(__ghs__)
+#define PS_FUNC_SIG __PRETTY_FUNCTION__
+#elif defined(__DMC__) && (__DMC__ >= 0x810)
+#define PS_FUNC_SIG __PRETTY_FUNCTION__
+#elif (defined(__FUNCSIG__) || (_MSC_VER))
+#define PS_FUNC_SIG __FUNCSIG__
+#elif (defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 600)) || (defined(__IBMCPP__) && (__IBMCPP__ >= 500))
+#define PS_FUNC_SIG __FUNCTION__
+#elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x550)
+#define PS_FUNC_SIG __FUNC__
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901)
+#define PS_FUNC_SIG __func__
+#elif defined(__cplusplus) && (__cplusplus >= 201103)
+#define PS_FUNC_SIG __func__
 #else
-	#define PROFILE_BEGIN_SESSION(name, filepath)
-	#define PROFILE_END_SESSION()
-	#define PROFILE_SCOPE(name)
-	#define PROFILE_FUNCTION()
+#define PS_FUNC_SIG "HZ_FUNC_SIG unknown!"
+#endif
+
+#define PROFILE_BEGIN_SESSION(name, filepath) ::Instrumentor::get().beginSession(name, filepath)
+#define PROFILE_END_SESSION() ::Instrumentor::get().endSession()
+#define PROFILE_SCOPE_LINE2(name, line) constexpr auto fixedName##line = ::cleanupOutputString(name, "__cdecl ");\
+											   ::Instrumentation_Timer timer##line(fixedName##line.Data)
+#define PROFILE_SCOPE_LINE(name, line) PROFILE_SCOPE_LINE2(name, line)
+#define PROFILE_SCOPE(name) PROFILE_SCOPE_LINE(name, __LINE__)
+#define PROFILE_FUNCTION() PROFILE_SCOPE(PS_FUNC_SIG)
+#else
+#define PROFILE_BEGIN_SESSION(name, filepath)
+#define PROFILE_END_SESSION()
+#define PROFILE_SCOPE(name)
+#define PROFILE_FUNCTION()
 #endif

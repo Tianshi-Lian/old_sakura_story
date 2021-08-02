@@ -40,16 +40,16 @@ project "sakura_story"
         "%{prj.name}/include"
     }
 
-    links
-    {
-    }
-
     filter "system:windows"
         systemversion "latest"
 
         links
         {
-            "vendor/lib/spdlog/spdlog"
+            "vendor/lib/spdlog/spdlog",
+            "vendor/lib/SDL2/SDL2",
+            "vendor/lib/SDL2/SDL2main",
+            "vendor/lib/SDL2_gpu/SDL2_gpu",
+            "vendor/lib/SDL2_ttf/SDL2_ttf",
         }
 
         defines
@@ -68,7 +68,7 @@ project "sakura_story"
     filter "system:linux"    
         links
         {
-            "spdlog"
+            "spdlog",
         }
 
         defines
