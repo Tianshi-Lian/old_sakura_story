@@ -1,6 +1,7 @@
 #pragma once
 
 #include <spdlog/logger.h>
+#include <spdlog/fmt/ostr.h>
 
 class Log {
 

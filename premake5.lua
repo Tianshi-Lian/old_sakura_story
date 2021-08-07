@@ -25,31 +25,40 @@ project "sakura_story"
     {
         "%{prj.name}/include/**.h",
         "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp"
+        "%{prj.name}/src/**.cpp",
+        "%{prj.name}/vendor/**.c",
+        "%{prj.name}/vendor/**.cpp",
+        "%{prj.name}/vendor/**.h",
+
     }
 
     sysincludedirs
     {
         "vendor/src",
-        "vendor/include"
+        "vendor/include",
+        "%{prj.name}/vendor",
     }
 
     includedirs
     {
-        "%{prj.name}/src",
-        "%{prj.name}/include"
+        "%{prj.name}/include",
     }
 
     filter "system:windows"
         systemversion "latest"
+
+        files
+        {
+            "%{prj.name}/vendor/**.natvis",
+        }
 
         links
         {
             "vendor/lib/spdlog/spdlog",
             "vendor/lib/SDL2/SDL2",
             "vendor/lib/SDL2/SDL2main",
-            "vendor/lib/SDL2_gpu/SDL2_gpu",
             "vendor/lib/SDL2_ttf/SDL2_ttf",
+            "vendor/lib/SDL2_gpu/SDL2_gpu",
         }
 
         defines

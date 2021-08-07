@@ -1,8 +1,10 @@
 #pragma once
 
-#include "common/types.h"
+#include "common/common.h"
 
 #include <string>
+
+struct FC_Font;
 
 namespace sakura::client::graphics {
 
@@ -11,7 +13,7 @@ namespace sakura::client::graphics {
 		Font();
 		~Font();
 
-		void load(const std::string& filepath, u32 pointSize/*, SDL_Color color, int style*/);
+		void load(const std::string& filepath, u32 pointSize);
 
 		void setSize(u32 pointSize);
 		[[nodiscard]] u32 getSize() const;
@@ -19,7 +21,7 @@ namespace sakura::client::graphics {
 		[[nodiscard]] void* getInternal() const;
 
 	private:
-		void* m_internal;
+		FC_Font* m_internal;
 
 		std::string m_filepath;
 

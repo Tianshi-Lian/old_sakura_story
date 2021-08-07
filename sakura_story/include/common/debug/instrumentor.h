@@ -2,6 +2,7 @@
 
 // Credit: TheCherno
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Debug/Instrumentor.h
+// Edits: Rob_Graham
 
 #include <chrono>
 #include <fstream>
