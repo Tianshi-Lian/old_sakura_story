@@ -4,29 +4,22 @@
 
 namespace sakura::common::core {
 
-	template <typename T>
+	template<typename T>
 	class Threadsafe_Queue {
 	public:
 		Threadsafe_Queue() = default;
-		Threadsafe_Queue(const Threadsafe_Queue&) = delete;
+		Threadsafe_Queue(const Threadsafe_Queue<T>&) = delete;
+		virtual ~Threadsafe_Queue() { clear(); }
 
-		virtual ~Threadsafe_Queue() {
-			clear();
-		}
-
+	public:
 		const T& front() {
 			std::scoped_lock lock(m_mutex);
 			return m_queue.front();
 		}
 
-		void pushBack(const T& item) {
+		const T& back() {
 			std::scoped_lock lock(m_mutex);
-			m_queue.push_back(item);
-		}
-
-		void pushFront(const T& item) {
-			std::scoped_lock lock(m_mutex);
-			m_queue.push_front(item);
+			return m_queue.back();
 		}
 
 		T popFront() {
@@ -43,24 +36,50 @@ namespace sakura::common::core {
 			return t;
 		}
 
+		void pushBack(const T& item) {
+			std::scoped_lock lock(m_mutex);
+			m_queue.emplace_back(std::move(item));
+
+			std::unique_lock ul(m_mutexBlock);
+			m_cvBlock.notify_one();
+		}
+
+		void pushFront(const T& item) {
+			std::scoped_lock lock(m_mutex);
+			m_queue.emplace_front(std::move(item));
+
+			std::unique_lock ul(m_mutexBlock);
+			m_cvBlock.notify_one();
+		}
+
+		bool isEmpty() {
+			std::scoped_lock lock(m_mutex);
+			return m_queue.empty();
+		}
+
+		size_t size() {
+			std::scoped_lock lock(m_mutex);
+			return m_queue.size();
+		}
+
 		void clear() {
 			std::scoped_lock lock(m_mutex);
 			m_queue.clear();
 		}
 
-		[[nodiscard]] bool isEmpty() const {
-			std::scoped_lock lock(m_mutex);
-			return m_queue.empty();
+		void wait() {
+			while (isEmpty()) {
+				std::unique_lock ul(m_mutexBlock);
+				m_cvBlock.wait(ul);
+			}
 		}
 
-		[[nodiscard]] size_t size() const {
-			std::scoped_lock lock(m_mutex);
-			return m_queue.size();
-		}
-
-	private:
+	protected:
 		std::mutex m_mutex;
 		std::deque<T> m_queue;
+		
+		std::condition_variable m_cvBlock;
+		std::mutex m_mutexBlock;
 	};
-	
+
 }

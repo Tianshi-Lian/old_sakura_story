@@ -52,5 +52,7 @@ public:
 	}
 
 private:
+	static void errorHandler(const std::string& message);
+	
 	static std::shared_ptr<spdlog::logger> coreLogger;
 };

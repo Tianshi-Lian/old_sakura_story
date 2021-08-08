@@ -3,10 +3,9 @@
 #include "common/debug/logger.h"
 #include "common/debug/instrumentor.h"
 
-#define ASIO_STANDALONE
-#include <asio/asio.hpp>
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
+#include "common/net/message.h"
+#include "client/net/client.h"
+#include "server/net/server.h"
 
 #include <glad/glad.h>
 
@@ -17,10 +16,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2_gpu/SDL_gpu.h>
 
-#include <chrono>
-#include <iostream>
-
-#include "common/net/message.h"
+using namespace sakura;
 
 void gameMain() {
 	const u32 screenWidth = 1600;
@@ -42,7 +38,7 @@ void gameMain() {
 	//game.initialize();
 
 	SDL_GLContext glContext = SDL_GL_CreateContext(window);
-	
+
 	gladLoadGLLoader(SDL_GL_GetProcAddress);
 
 	// Init imgui test
@@ -86,10 +82,10 @@ void gameMain() {
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		GPU_Flip(screen);
-		
+
 		/*
 		game.handleInput();
-		game.update();
+		game.processMessages();
 
 		renderer.clear();
 		game.render(&renderer);
@@ -100,11 +96,11 @@ void gameMain() {
 	PROFILE_END_SESSION();
 }
 
-std::vector<char> g_buffer(1024*1024);
+std::vector<char> g_buffer(1024 * 1024);
 
 void readData(asio::ip::tcp::socket& socket) {
 	socket.async_read_some(asio::buffer(g_buffer.data(), g_buffer.size()),
-		[&socket] (std::error_code errorCode, std::size_t length) {
+		[&socket](std::error_code errorCode, std::size_t length) {
 			if (!errorCode) {
 				Log::info("readData - Read {} bytes", length);
 				for (int i = 0; i < length; ++i) {
@@ -116,81 +112,172 @@ void readData(asio::ip::tcp::socket& socket) {
 			else {
 				Log::error("readData - Error reading from socket: {}", errorCode.message());
 			}
-		}	
+		}
 	);
 }
 
 enum Message_Types : u32 {
-	FireBullet = 1,
-	MovePlayer
+	Server_GetStatus,
+	Server_GetPing,
+	Server_Register,
+	Server_Unregister,
+	
+	Client_Accepted,
+	Client_AssignID,
+	
+	MessageAllClients,
+};
+
+class Game_Server : public server::net::Server {
+public:
+	Game_Server(u32 port) : Server(port) {}
+
+	bool onClientConnect(std::shared_ptr<common::net::Connection> client) override {
+		common::net::Message message;
+		message.header.id = Message_Types::Client_Accepted;
+
+		client->send(message);
+		
+		return true;
+	}
+
+	void onMessage(std::shared_ptr<common::net::Connection> client, common::net::Message& message) override {
+		switch (message.header.id) {
+			case Message_Types::Server_GetPing: {
+				Log::info("[Server] Received ping from client: {}", client->getId());
+				client->send(message);
+			}
+			break;
+
+			case Message_Types::Server_Register: {
+				Log::info("[Server] Registering client: {}", client->getId());
+				common::net::Message assignMessage;
+				assignMessage.header.id = Message_Types::Client_AssignID;
+				assignMessage << client->getId();
+				client->send(assignMessage);
+			}
+			break;
+
+			case Message_Types::MessageAllClients: {
+				Log::info("[Server] Message all from client: {}", client->getId());
+				message << client->getId();
+				messageAllClients(message, client);
+			}
+		}
+	}
+};
+
+class Game_Client : public client::net::Client {
+public:
+	void pingServer() {
+		common::net::Message message;
+		message.header.id = Message_Types::Server_GetPing;
+
+		std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+
+		message << now;
+		send(message);
+	}
+
+	void messageAll() {
+		common::net::Message message;
+		message.header.id = Message_Types::MessageAllClients;
+		send(message);
+	}
 };
 
 int main(int argc, char* argv[]) {
 	Log::initialize();
-	
-	asio::error_code errorCode;
 
-	// Context - platform specific interface for asio
-	asio::io_context context;
-	// Supply idle work so context never finishes
-	asio::io_context::work idleWork(context);
-	// Start the context running in it's own thread
-	std::thread netThread = std::thread([&context]() { context.run(); });
-
-	// Create an endpoint to connect to
-	asio::ip::tcp::endpoint endpoint(asio::ip::make_address("93.184.216.34", errorCode), 80);
-	// Create a socket to listen to
-	asio::ip::tcp::socket socket(context);
-
-	// Connect our socket to the endpoint
-	socket.connect(endpoint, errorCode);
-
-	if (!errorCode) {
-		Log::info("Connected");
-	}
-	else {
-		Log::error("Failed to connect: {}", errorCode.message());
+	std::string type = "--client";
+	if (argc >= 2) {
+		char* ctype = argv[1];
+		type = ctype;
 	}
 
-	if (socket.is_open()) {
-		readData(socket);
-		
-		std::string request = 
-			"GET /index.html HTTP/1.1\r\n"
-			"Host: example.com\r\n"
-			"Connection: close\r\n\r\n";
+	if (type == "--server") {
+		Game_Server server(60000);
+		server.start();
 
-		socket.write_some(asio::buffer(request), errorCode);
-
-		using namespace std::chrono_literals;
-		std::this_thread::sleep_for(5s);
-
-		context.stop();
-		if (netThread.joinable()) {
-			netThread.join();
+		while (1) {
+			server.processMessages();
 		}
 	}
+	else {
+		Game_Client client1;
+		client1.connect("127.0.0.1", 60000);
 
-	struct pos {
-		float x;
-		float y;
-	};
-	
-	sakura::common::net::Message msg;
-	msg.header.id = Message_Types::FireBullet;
+		bool key[3] = { false, false, false };
+		bool oldKey[3] = { false, false, false };
 
-	msg << 1 << true << 3.0f << pos{2.6f, -4.8f};
+		bool running = true;
+		while (running) {
+			if (GetForegroundWindow() == GetConsoleWindow()) {
+				key[0] = GetAsyncKeyState('1') & 0x8000;
+				key[1] = GetAsyncKeyState('2') & 0x8000;
+				key[2] = GetAsyncKeyState('3') & 0x8000;
+			}
 
-	Log::info("Message: {}", msg);
+			if (key[0] && !oldKey[0]) {
+				client1.pingServer();
+			}
+			if (key[1] && !oldKey[1]) {
+				client1.messageAll();
+			}
+			if (key[2] && !oldKey[2]) {
+				running = false;
+			}
 
-	int a;
-	bool b;
-	f32 c;
-	pos d;
+			for (int i = 0; i < 3; ++i) {
+				oldKey[i] = key[i];
+			}
 
-	msg >> d >> c >> b >> a;
+			if (client1.isConnected()) {
+				if (!client1.incoming().isEmpty()) {
+					auto message = client1.incoming().popFront().message;
 
-	Log::info("a: {}, b: {}, c: {}, d: {},{}", a, b, c, d.x, d.y);
+					switch (message.header.id) {
+						case Message_Types::Server_GetPing: {
+							std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+							std::chrono::system_clock::time_point then;
+							message >> then;
+
+							Log::info("[{}] Ping: {}", client1.getId(), std::chrono::duration<double>(now - then).count());
+						}
+						break;
+
+						case Message_Types::MessageAllClients: {
+							u32 clientId;
+							message >> clientId;
+
+							Log::info("[{}] Received message from client: {}", client1.getId(), clientId);
+						}
+						break;
+
+						case Message_Types::Client_Accepted: {
+							Log::info("[Unknown] Server accepted request");
+							common::net::Message message;
+							message.header.id = Message_Types::Server_Register;
+							client1.send(message);
+						}
+						break;
+
+						case Message_Types::Client_AssignID: {
+							u32 clientId;
+							message >> clientId;
+							client1.setId(clientId);
+							Log::info("[{}] Client registered with ID: {} ", client1.getId(), client1.getId());
+						}
+						break;
+					}
+				}
+			}
+			else {
+				Log::info("[{}] Server down!", client1.getId());
+				running = false;
+			}
+		}
+	}
 
 	return (0);
 }
