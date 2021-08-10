@@ -20,6 +20,8 @@ namespace sakura::server::net {
 
 		void processMessages(u64 maxMessages = -1, bool wait = false);
 
+		virtual void onClientValidated(std::shared_ptr<common::net::Connection> client);
+	
 	protected:
 		virtual bool onClientConnect(std::shared_ptr<common::net::Connection> client);
 		virtual void onClientDisconnect(std::shared_ptr<common::net::Connection> client);
@@ -34,7 +36,7 @@ namespace sakura::server::net {
 
 		asio::ip::tcp::acceptor m_acceptor;
 
-		uint32_t nIDCounter = 10000;
+		uint32_t m_idCounter = 10000;
 	};
 
 }

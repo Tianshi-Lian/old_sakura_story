@@ -48,7 +48,7 @@ void Server::waitForClientConnection() {
 				if (onClientConnect(newConnection)) {
 					m_connections.push_back(std::move(newConnection));
 
-					m_connections.back()->connectToClient(nIDCounter++);
+					m_connections.back()->connectToClient(this, m_idCounter++);
 
 					Log::info("[Server] Connection Approved for client: {}", m_connections.back()->getId());
 				}
@@ -100,7 +100,9 @@ void Server::messageAllClients(const common::net::Message& message, const std::s
 }
 
 void Server::processMessages(u64 maxMessages, bool wait) {
-	if (wait) m_MessagesIn.wait();
+	if (wait) {
+		m_MessagesIn.wait();
+	}
 
 	size_t messageCount = 0;
 	while (messageCount < maxMessages && !m_MessagesIn.isEmpty()) {
@@ -110,6 +112,9 @@ void Server::processMessages(u64 maxMessages, bool wait) {
 
 		messageCount++;
 	}
+}
+
+void Server::onClientValidated(std::shared_ptr<common::net::Connection> client) {
 }
 
 bool Server::onClientConnect(std::shared_ptr<common::net::Connection> client) {
