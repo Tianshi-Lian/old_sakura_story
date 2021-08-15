@@ -21,7 +21,7 @@ namespace sakura::server::net {
 		void processMessages(u64 maxMessages = -1, bool wait = false);
 
 		virtual void onClientValidated(std::shared_ptr<common::net::Connection> client);
-	
+
 	protected:
 		virtual bool onClientConnect(std::shared_ptr<common::net::Connection> client);
 		virtual void onClientDisconnect(std::shared_ptr<common::net::Connection> client);

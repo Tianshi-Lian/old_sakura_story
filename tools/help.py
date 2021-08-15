@@ -1,6 +1,7 @@
 import os
 import sys
 
+
 commands = "Valid commands: "
 for f in os.scandir("./tools"):
     if f.is_file() and f.name.endswith(".py") and not f.name.startswith("_"):

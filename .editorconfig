@@ -1,0 +1,34 @@
+# indicate this is the root of the project
+root = true
+
+[*]
+indent_style = tab
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.ts]
+indent_style = space
+indent_size = 4
+
+# psql does stupid things if you type in tabs, so it's easier to use spaces
+[*.sql]
+indent_style = space
+indent_size = 4
+
+[{*.py,dev}]
+indent_style = space
+indent_size = 4
+
+[*.robot]
+indent_style = space
+indent_size = 4
+
+[*.feature]
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml,yml.in}]
+indent_style = space
+indent_size = 2

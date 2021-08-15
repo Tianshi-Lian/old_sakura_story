@@ -1,6 +1,7 @@
 import os, sys
 import shutil
 
+
 def clean_directory(dirname):
     for roots, dirs, files in os.walk(dirname):
         for folder in dirs:
@@ -24,7 +25,7 @@ try:
     shutil.rmtree("bin-int", ignore_errors=True)
     print("Removing: ./tools/__pycache__/*...")
     shutil.rmtree("./tools/__pycache__", ignore_errors=True)
-    
+
     clean_directory(".")
 
 except OSError as e:

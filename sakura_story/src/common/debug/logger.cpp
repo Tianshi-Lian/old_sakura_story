@@ -14,9 +14,9 @@ void Log::initialize() {
 	logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 	logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/app.log", true));
 
-	logSinks[0]->set_pattern("%^[%T.%e] [%l] %v%$");
-	logSinks[1]->set_pattern("[%T.%e] [%l] %v");
-	
+	logSinks[0]->set_pattern("%^[%Y-%m-%d %H:%M:%S.%e] %v%$");
+	logSinks[1]->set_pattern("%^[%Y-%m-%d %H:%M:%S.%e] %v%$");
+
 	coreLogger = std::make_shared<spdlog::logger>("coreLogger", std::begin(logSinks), std::end(logSinks));
 	coreLogger->set_level(spdlog::level::trace);
 	coreLogger->flush_on(spdlog::level::trace);

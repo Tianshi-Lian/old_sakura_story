@@ -10,7 +10,7 @@
 namespace sakura::common {
 
 	enum class Language { EN, DE };
-	
+
 	constexpr u32 val_32_const = 0x811c9dc5;
 	constexpr u32 prime_32_const = 0x1000193;
 
@@ -70,5 +70,5 @@ namespace sakura::common {
 			// TODO(rob): Logging!
 		}
 	}
-	
+
 }

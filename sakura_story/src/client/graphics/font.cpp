@@ -22,7 +22,7 @@ Font::~Font() {
 
 void Font::load(const std::string& filepath, u32 pointSize) {
 	Log::info("Loading font: {} size: {}", filepath, pointSize);
-	PROFILE_FUNCTION()
+	PROFILE_FUNCTION();
 
 	m_internal = FC_CreateFont();
 	FC_LoadFont(m_internal, filepath.c_str(), pointSize, FC_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
@@ -32,7 +32,7 @@ void Font::load(const std::string& filepath, u32 pointSize) {
 }
 
 void Font::setSize(u32 pointSize) {
-	PROFILE_FUNCTION()
+	PROFILE_FUNCTION();
 	FC_FreeFont(m_internal);
 
 	m_internal = FC_CreateFont();

@@ -220,5 +220,3 @@ u64 Connection::scrambleData(u64 input) const {
 	out = (out & 0xF0F0F0F0F0F0F0) >> 4 | (out & 0x0F0F0F0F0F0F0F) << 4;
 	return out ^ 0xABD28AD184DF0001;
 }
-
-

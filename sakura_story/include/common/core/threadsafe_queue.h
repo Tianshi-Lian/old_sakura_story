@@ -77,7 +77,7 @@ namespace sakura::common::core {
 	protected:
 		std::mutex m_mutex;
 		std::deque<T> m_queue;
-		
+
 		std::condition_variable m_cvBlock;
 		std::mutex m_mutexBlock;
 	};
