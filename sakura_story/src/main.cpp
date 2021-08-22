@@ -7,22 +7,22 @@
 #include "client/net/client.h"
 #include "server/net/server.h"
 
-//#include <glad/glad.h>
-//
-//#include <imgui/imgui.h>
-//#include <imgui/imgui_impl_sdl.h>
-//#include <imgui/imgui_impl_opengl3.h>
+#include <glad/glad.h>
+
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 #include <SDL2/SDL.h>
 #include <SDL2_gpu/SDL_gpu.h>
 
-using namespace sakura;
+using namespace sita;
 
 void gameMain() {
 	const u32 screenWidth = 1600;
 	const u32 screenHeight = 900;
 
-	Log::initialize();
+	//Log::initialize();
 	Log::debug("Project_S Initializing...");
 
 	PROFILE_BEGIN_SESSION("project_s", "logs/timings.json");
@@ -39,14 +39,14 @@ void gameMain() {
 
 	SDL_GLContext glContext = SDL_GL_CreateContext(window);
 
-	//gladLoadGLLoader(SDL_GL_GetProcAddress);
+	gladLoadGLLoader(SDL_GL_GetProcAddress);
 
-	//// Init imgui test
-	//IMGUI_CHECKVERSION();
-	//ImGui::CreateContext();
+	// Init imgui test
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
 
-	//ImGui_ImplSDL2_InitForOpenGL(window, glContext);
-	//ImGui_ImplOpenGL3_Init("#version 410");
+	ImGui_ImplSDL2_InitForOpenGL(window, glContext);
+	ImGui_ImplOpenGL3_Init("#version 410");
 
 	bool running = true;
 	SDL_Event event;
@@ -71,15 +71,15 @@ void gameMain() {
 		}
 		GPU_Clear(screen);
 
-		//ImGui_ImplOpenGL3_NewFrame();
-		//ImGui_ImplSDL2_NewFrame(window);
-		//ImGui::NewFrame();
-		//
-		//ImGui::ShowDemoWindow();
-		//
-		//ImGui::Render();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplSDL2_NewFrame(window);
+		ImGui::NewFrame();
+
+		ImGui::ShowDemoWindow();
+
+		ImGui::Render();
 		SDL_GL_MakeCurrent(window, glContext);
-		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		GPU_Flip(screen);
 
@@ -178,19 +178,16 @@ int main(int argc, char* argv[]) {
 		type = ctype;
 	}
 
-	std::thread serverThread;
-	if (type == "--server") {
-		serverThread = std::thread(
-			[]() {
-				Game_Server server(60000);
-				server.start();
+	std::thread serverThread = std::thread(
+		[]() {
+			Game_Server server(60000);
+			server.start();
 
-				while (1) {
-					server.processMessages();
-				}
+			while (1) {
+				server.processMessages();
 			}
-		);
-	}
+		}
+	);
 
 	std::thread clientThread = std::thread(
 		[]() {

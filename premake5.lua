@@ -49,6 +49,7 @@ project "sakura_story"
     {
         "%{prj.name}/include",
 		"sita/sita/include",
+		"sita/sita/vendor",
     }
 
 	postbuildcommands
