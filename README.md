@@ -1,5 +1,5 @@
-# Sita Engine
-My custom game engine.
+# Sakura Story
+Sakura Story game.
 
 ## Build:
 #### Global Dependencies:
