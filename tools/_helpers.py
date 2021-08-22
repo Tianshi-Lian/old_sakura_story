@@ -1,6 +1,7 @@
 from collections import namedtuple
 
 ParsedArgs = namedtuple("ParsedArgs", "command original dict")
+Version = namedtuple("Version", "MAJOR MINOR PATCH BUILD")
 
 def process_args(argv) -> ParsedArgs:
     dict = {} # key:value dictionary
@@ -23,3 +24,26 @@ def get_arg_value(args: ParsedArgs, names, default):
             return args.dict[name]
 
     return default
+
+def read_version(fileName) -> Version:
+    V_MAJOR = 0
+    V_MINOR = 0
+    V_PATCH = 0
+    V_BUILD = 0
+
+    build_meta = open(fileName)
+    version_lines = build_meta.readlines()
+    for line in version_lines:
+        # TODO: Possibly have a way to check for a version upgrade and reset "smaller" values?
+        front, back = line.split()
+        if front == "MAJOR":
+            V_MAJOR = int(back)
+        elif front == "MINOR":
+            V_MINOR = int(back)
+        elif front == "PATCH":
+            V_PATCH = int(back)
+        elif front == "BUILD":
+            V_BUILD = int(back)
+    build_meta.close()
+
+    return Version(V_MAJOR, V_MINOR, V_PATCH, V_BUILD)

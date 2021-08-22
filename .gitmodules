@@ -1,0 +1,3 @@
+[submodule "sita"]
+	path = sita
+	url = git@github.com:r-ggraham/sita.git

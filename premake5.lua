@@ -11,12 +11,19 @@ workspace "sakura_story"
 tdir = "bin/%{cfg.system}-%{cfg.buildcfg}-%{cfg.architecture}/%{prj.name}"
 odir = "bin-int/%{cfg.system}-%{cfg.buildcfg}-%{cfg.architecture}/%{prj.name}"
 
+include("sita")
+
 project "sakura_story"
-    location "sakura_story"
+	location "sakura_story"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
     staticruntime "on"
+
+	links
+	{
+		"sita"
+	}
 
     targetdir(tdir)
     objdir(odir)
@@ -29,7 +36,6 @@ project "sakura_story"
         "%{prj.name}/vendor/**.c",
         "%{prj.name}/vendor/**.cpp",
         "%{prj.name}/vendor/**.h",
-
     }
 
     sysincludedirs
@@ -42,7 +48,15 @@ project "sakura_story"
     includedirs
     {
         "%{prj.name}/include",
+		"sita/sita/include",
     }
+
+	postbuildcommands
+	{
+		"{COPY} %{prj.name}.build.meta ../" .. tdir,
+		"{COPY} ../data/ ../" .. tdir .. "/data/",
+		"python ../tools/_postbuild.py %{prj.name}",
+	}
 
     filter "system:windows"
         systemversion "latest"
@@ -63,45 +77,25 @@ project "sakura_story"
 
         defines
         {
-            "S_WIN"
+            "SITA_WIN"
         }
 
         postbuildcommands
         {
             "{COPY} ../vendor/bin/*.dll ../" .. tdir,
-            "{COPY} ../data/ ../" .. tdir .. "/data/"
         }
 
         debugdir(tdir)
 
-    filter "system:linux"    
+    filter "system:linux"
         links
         {
             "spdlog",
         }
 
-        defines
-        {
-            "S_LINUX"
-        }
-        
-        postbuildcommands
-        {
-            "{COPY} ../data/* ../" .. tdir .. "/data/"
-        }
-
     filter "configurations:debug"
         runtime "Debug"
         symbols "on"
-        defines
-        {
-            "S_DEBUG"
-        }
-		
-		postbuildcommands
-		{
-			"{COPY} ../build.meta ../" .. tdir
-		}
 
     filter "configurations:release"
         runtime "Release"
