@@ -1,11 +1,11 @@
-#include <common/common.h>
+#include <core/types.h>
 
-#include "common/debug/logger.h"
-#include "common/debug/instrumentor.h"
+#include <debug/logger.h>
+#include <debug/instrumentor.h>
 
-#include "common/net/message.h"
-#include "client/net/client.h"
-#include "server/net/server.h"
+#include <network/message.h>
+#include <network/client/client.h>
+#include <network/server/server.h>
 
 #include <glad/glad.h>
 
@@ -108,23 +108,23 @@ enum Message_Types : u32 {
 	MessageAllClients,
 };
 
-class Game_Server : public server::net::Server {
+class Game_Server : public network::server::Server {
 public:
 	Game_Server(u16 port) : Server(port) {}
 
-	bool onClientConnect(std::shared_ptr<common::net::Connection> client) override {
-		common::net::Message message;
+	bool onClientConnect(std::shared_ptr<network::Connection> client) override {
+		network::Message message;
 		message.header.id = Message_Types::Client_Accepted;
 		client->send(message);
 
 		return true;
 	}
 
-	void onClientDisconnect(std::shared_ptr<common::net::Connection> client) override {
+	void onClientDisconnect(std::shared_ptr<network::Connection> client) override {
 		Log::info("[Server] Client disconnected, ID: {}", client->getId());
 	}
 
-	void onMessage(std::shared_ptr<common::net::Connection> client, common::net::Message& message) override {
+	void onMessage(std::shared_ptr<network::Connection> client, network::Message& message) override {
 		switch (message.header.id) {
 			case Message_Types::Server_GetPing: {
 				Log::info("[Server] Received ping from client: {}", client->getId());
@@ -134,7 +134,7 @@ public:
 
 			case Message_Types::Server_Register: {
 				Log::info("[Server] Registering client: {}", client->getId());
-				common::net::Message assignMessage;
+				network::Message assignMessage;
 				assignMessage.header.id = Message_Types::Client_AssignID;
 				assignMessage << client->getId();
 				client->send(assignMessage);
@@ -150,10 +150,10 @@ public:
 	}
 };
 
-class Game_Client : public client::net::Client {
+class Game_Client : public network::client::Client {
 public:
 	void pingServer() {
-		common::net::Message message;
+		network::Message message;
 		message.header.id = Message_Types::Server_GetPing;
 
 		std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
@@ -163,7 +163,7 @@ public:
 	}
 
 	void messageAll() {
-		common::net::Message message;
+		network::Message message;
 		message.header.id = Message_Types::MessageAllClients;
 		send(message);
 	}
@@ -243,7 +243,7 @@ int main(int argc, char* argv[]) {
 
 							case Message_Types::Client_Accepted: {
 								Log::info("[Unknown] Server accepted request");
-								common::net::Message msgRegister;
+								network::Message msgRegister;
 								msgRegister.header.id = Message_Types::Server_Register;
 								client1.send(msgRegister);
 							}
