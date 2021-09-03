@@ -129,8 +129,7 @@ public:
 			case Message_Types::Server_GetPing: {
 				Log::info("[Server] Received ping from client: {}", client->getId());
 				client->send(message);
-			}
-											  break;
+			} break;
 
 			case Message_Types::Server_Register: {
 				Log::info("[Server] Registering client: {}", client->getId());
@@ -138,14 +137,13 @@ public:
 				assignMessage.header.id = Message_Types::Client_AssignID;
 				assignMessage << client->getId();
 				client->send(assignMessage);
-			}
-											   break;
+			} break;
 
 			case Message_Types::MessageAllClients: {
 				Log::info("[Server] Message all from client: {}", client->getId());
 				message << client->getId();
 				messageAllClients(message, client);
-			}
+			} break;
 		}
 	}
 };
@@ -230,32 +228,28 @@ int main(int argc, char* argv[]) {
 								message >> then;
 
 								Log::info("[{}] Ping: {}", client1.getId(), std::chrono::duration<double>(now - then).count());
-							}
-															  break;
+							} break;
 
 							case Message_Types::MessageAllClients: {
 								u32 clientId;
 								message >> clientId;
 
 								Log::info("[{}] Received message from client: {}", client1.getId(), clientId);
-							}
-																 break;
+							} break;
 
 							case Message_Types::Client_Accepted: {
 								Log::info("[Unknown] Server accepted request");
 								network::Message msgRegister;
 								msgRegister.header.id = Message_Types::Server_Register;
 								client1.send(msgRegister);
-							}
-															   break;
+							} break;
 
 							case Message_Types::Client_AssignID: {
 								u32 clientId;
 								message >> clientId;
 								client1.setId(clientId);
 								Log::info("[{}] Client registered with ID: {} ", client1.getId(), client1.getId());
-							}
-															   break;
+							} break;
 						}
 					}
 				}
